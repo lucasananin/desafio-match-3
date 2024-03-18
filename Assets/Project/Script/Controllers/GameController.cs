@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using Gazeus.DesafioMatch3.Core;
 using Gazeus.DesafioMatch3.Models;
+using Gazeus.DesafioMatch3.ScriptableObjects;
 using Gazeus.DesafioMatch3.Views;
 using UnityEngine;
 
@@ -11,13 +12,20 @@ namespace Gazeus.DesafioMatch3.Controllers
     public class GameController : MonoBehaviour
     {
         [SerializeField] private BoardView _boardView;
-        [SerializeField] private int _boardHeight = 10;
-        [SerializeField] private int _boardWidth = 10;
+        [SerializeField] private LevelDataSO _levelDataSO = null;
+        [SerializeField, Range(4, 16)] private int _boardHeight = 10;
+        [SerializeField, Range(4, 16)] private int _boardWidth = 10;
 
         private GameService _gameEngine;
         private bool _isAnimating;
         private int _selectedX = -1;
         private int _selectedY = -1;
+
+        public static event Action<bool> onIsBusyChanged = null;
+        public static event Action<Vector2Int> onTileSelected = null;
+        public static event Action onTileDeselected = null;
+
+        public GameService GameEngine { get => _gameEngine; private set => _gameEngine = value; }
 
         #region Unity
         private void Awake()
@@ -33,8 +41,16 @@ namespace Gazeus.DesafioMatch3.Controllers
 
         private void Start()
         {
-            List<List<Tile>> board = _gameEngine.StartGame(_boardWidth, _boardHeight);
+            List<List<Tile>> board = _gameEngine.StartGame(_boardWidth, _boardHeight, _levelDataSO);
             _boardView.CreateBoard(board);
+        }
+
+        private void OnValidate()
+        {
+            if (_boardHeight < _boardWidth)
+            {
+                _boardWidth = _boardHeight;
+            }
         }
         #endregion
 
@@ -43,7 +59,7 @@ namespace Gazeus.DesafioMatch3.Controllers
             BoardSequence boardSequence = boardSequences[index];
 
             Sequence sequence = DOTween.Sequence();
-            sequence.Append(_boardView.DestroyTiles(boardSequence.MatchedPosition));
+            sequence.Append(_boardView.DestroyTiles(boardSequence));
             sequence.Append(_boardView.MoveTiles(boardSequence.MovedTiles));
             sequence.Append(_boardView.CreateTile(boardSequence.AddedTiles));
 
@@ -72,27 +88,42 @@ namespace Gazeus.DesafioMatch3.Controllers
                 else
                 {
                     _isAnimating = true;
+                    onIsBusyChanged?.Invoke(_isAnimating);
+
                     _boardView.SwapTiles(_selectedX, _selectedY, x, y).onComplete += () =>
                     {
-                        bool isValid = _gameEngine.IsValidMovement(_selectedX, _selectedY, x, y);
-                        if (isValid)
+                        List<BoardSequence> swapResult = _gameEngine.SwapTile(_selectedX, _selectedY, x, y);
+
+                        if (swapResult.Count > 0)
                         {
-                            List<BoardSequence> swapResult = _gameEngine.SwapTile(_selectedX, _selectedY, x, y);
-                            AnimateBoard(swapResult, 0, () => _isAnimating = false);
+                            AnimateBoard(swapResult, 0, () =>
+                            {
+                                _isAnimating = false;
+                                _levelDataSO.TotalScoreMultiplier = 0;
+                                onIsBusyChanged?.Invoke(_isAnimating);
+                            });
                         }
                         else
                         {
-                            _boardView.SwapTiles(x, y, _selectedX, _selectedY).onComplete += () => _isAnimating = false;
+                            _boardView.SwapTiles(x, y, _selectedX, _selectedY).onComplete += () => 
+                            {
+                                _isAnimating = false;
+                                onIsBusyChanged?.Invoke(_isAnimating);
+                            };
                         }
+
                         _selectedX = -1;
                         _selectedY = -1;
                     };
                 }
+
+                onTileDeselected?.Invoke();
             }
             else
             {
                 _selectedX = x;
                 _selectedY = y;
+                onTileSelected?.Invoke(new Vector2Int(x, y));
             }
         }
     }

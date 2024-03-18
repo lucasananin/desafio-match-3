@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a40a2a3a1ad2ea4c9145a1cf76b9036, type: 3}
+  m_Name: LevelData_1
+  m_EditorClassIdentifier: 
+  _isRunning: 1
+  _tileTypeCount: 3
+  _victoryGoals:
+  - {fileID: 11400000, guid: e2dad0fd11532f1408b02458ab872863, type: 2}
+  _defeatGoals: []
+  _maxScore: 300
+  _totalScore: 0
+  _totalScoreMultiplier: 0
+  _maxTimeInSeconds: 0
+  _deadzoneInitialPositions: []
+  _jokerTileChance: 20

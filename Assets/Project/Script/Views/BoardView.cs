@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using Gazeus.DesafioMatch3.Controllers;
 using Gazeus.DesafioMatch3.Models;
 using Gazeus.DesafioMatch3.ScriptableObjects;
 using UnityEngine;
@@ -10,14 +11,35 @@ namespace Gazeus.DesafioMatch3.Views
 {
     public class BoardView : MonoBehaviour
     {
-        public event Action<int, int> TileClicked;
-
         [SerializeField] private GridLayoutGroup _boardContainer;
         [SerializeField] private TilePrefabRepository _tilePrefabRepository;
         [SerializeField] private TileSpotView _tileSpotPrefab;
+        [SerializeField] private UiView _selector = null;
+        [SerializeField] private AudioDataSO _AudioDataSO = null;
 
         private GameObject[][] _tiles;
         private TileSpotView[][] _tileSpots;
+
+        public event Action<int, int> TileClicked;
+        public static event Action<BoardSequence> onTilesDestroyed = null;
+        public static event Action<List<GameObject>> onTileViewsDestroyed = null;
+
+        private void Start()
+        {
+            _selector.Hide();
+        }
+
+        private void OnEnable()
+        {
+            GameController.onTileSelected += SetSelectorPosition;
+            GameController.onTileDeselected += _selector.Hide;
+        }
+
+        private void OnDisable()
+        {
+            GameController.onTileSelected -= SetSelectorPosition;
+            GameController.onTileDeselected -= _selector.Hide;
+        }
 
         public void CreateBoard(List<List<Tile>> board)
         {
@@ -75,15 +97,21 @@ namespace Gazeus.DesafioMatch3.Views
             return sequence;
         }
 
-        public Tween DestroyTiles(List<Vector2Int> matchedPosition)
+        public Tween DestroyTiles(BoardSequence _boardSequence)
         {
-            for (int i = 0; i < matchedPosition.Count; i++)
+            List<GameObject> _destroyedObjects = new();
+
+            for (int i = 0; i < _boardSequence.MatchedPosition.Count; i++)
             {
-                Vector2Int position = matchedPosition[i];
+                Vector2Int position = _boardSequence.MatchedPosition[i];
+                _destroyedObjects.Add(_tiles[position.y][position.x]);
                 Destroy(_tiles[position.y][position.x]);
                 _tiles[position.y][position.x] = null;
             }
 
+            _AudioDataSO.PlayAsSfx();
+            onTilesDestroyed?.Invoke(_boardSequence);
+            onTileViewsDestroyed?.Invoke(_destroyedObjects);
             return DOVirtual.DelayedCall(0.2f, () => { });
         }
 
@@ -126,6 +154,12 @@ namespace Gazeus.DesafioMatch3.Views
             (_tiles[toY][toX], _tiles[fromY][fromX]) = (_tiles[fromY][fromX], _tiles[toY][toX]);
 
             return sequence;
+        }
+
+        private void SetSelectorPosition(Vector2Int _gridPosition)
+        {
+            _selector.transform.position = _tiles[_gridPosition.y][_gridPosition.x].transform.position;
+            _selector.Show();
         }
 
         #region Events

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2845905119852089044}
   - component: {fileID: 1236191606393931107}
   - component: {fileID: 3981082844441969820}
+  - component: {fileID: 2847757912690572930}
   m_Layer: 5
   m_Name: OrageTile
   m_TagString: Untagged
@@ -59,16 +60,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.9056604, g: 0.38104007, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 4a9df9388c0bf9646beea39d93e7fe17, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -76,3 +77,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2847757912690572930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4679404501436794767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 930d8f28c59abd745917edd4fe9a3b45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _image: {fileID: 3981082844441969820}
+  _changeTimer: 0.5
+  _sprites:
+  - {fileID: 21300000, guid: 4a9df9388c0bf9646beea39d93e7fe17, type: 3}
+  - {fileID: 21300000, guid: f7689ccf85baa05489a3b059035770a7, type: 3}
